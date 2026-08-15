@@ -60,26 +60,6 @@
   }
   .detail b{color:var(--ink);font-weight:500}
 
-  .strip{margin-top:clamp(28px,5vh,52px)}
-  .strip-title{font-size:13px;color:var(--dim);margin-bottom:12px}
-  .strip-head{display:flex;justify-content:space-between;font-family:var(--font-mono);
-    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
-  .bars{display:flex;gap:3px;align-items:flex-end;height:56px}
-  .bar{flex:1;border-radius:2px;background:rgba(255,255,255,.14);height:38%;position:relative;transition:height .4s ease}
-  .bar[data-kind="clase"]{background:#F2C14E;height:100%}
-  .bar[data-kind="inclusion"]{background:#5EC8D8;height:78%}
-  .bar[data-kind="reunion"]{background:#5EC8D8;height:78%}
-  .bar.now{background:var(--accent);height:100%}
-  .bar.now::after{content:"";position:absolute;left:50%;transform:translateX(-50%);
-    bottom:-11px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
-  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:20px;
-    font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
-  .legend span{display:flex;align-items:center;gap:7px}
-  .swatch{width:14px;height:8px;border-radius:2px;background:rgba(255,255,255,.14)}
-  .swatch.clase{background:#F2C14E}
-  .swatch.incl{background:#5EC8D8}
-  .swatch.now{width:8px;height:8px;border-radius:50%;background:var(--accent)}
-
   footer{max-width:1100px;width:100%;margin:0 auto;border-top:1px solid var(--line);padding-top:20px}
   .toggle{background:none;border:1px solid var(--line);color:var(--ink);cursor:pointer;
     font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
@@ -131,18 +111,6 @@
   <p class="eyebrow" id="eyebrow">Cargando…</p>
   <h1 class="verdict" id="verdict">Un segundo</h1>
   <p class="detail" id="detail">Revisando el horario.</p>
-
-  <section class="strip" aria-hidden="true">
-    <p class="strip-title">Cada barra es un bloque del día — la resaltada es ahora.</p>
-    <div class="strip-head"><span id="stripDay">Hoy</span><span>08:31 → 22:30</span></div>
-    <div class="bars" id="bars"></div>
-    <div class="legend">
-      <span><i class="swatch"></i>Libre</span>
-      <span><i class="swatch incl"></i>Inclusión</span>
-      <span><i class="swatch clase"></i>Clases</span>
-      <span><i class="swatch now"></i>Ahora</span>
-    </div>
-  </section>
 </main>
 
 <footer>
@@ -153,12 +121,6 @@
 
 <script>
 const TZ = "America/Santiago";
-
-const MODULES = [
-  [511,550],[551,590],[601,640],[641,680],[691,730],[731,770],[781,820],[821,860],
-  [871,910],[911,950],[961,1000],[1001,1040],[1051,1090],[1091,1130],[1141,1180],
-  [1181,1220],[1231,1270],[1271,1310],[1311,1350]
-];
 
 const t = (hhmm) => { const [h,m] = hhmm.split(":").map(Number); return h*60+m; };
 
@@ -298,7 +260,6 @@ function paint(){
   document.getElementById("eyebrow").textContent = r.eyebrow;
   document.getElementById("verdict").textContent = r.verdict;
   document.getElementById("detail").innerHTML = r.detail;
-  document.getElementById("stripDay").textContent = DAY_NAMES[now.day];
 
   const portrait = document.getElementById("portraitImg");
   const src = IMAGES[r.state];
@@ -310,25 +271,10 @@ function paint(){
   }
   portrait.alt = r.verdict;
 
-  const blocks = blocksFor(now.day);
-  const bars = document.getElementById("bars");
-  bars.innerHTML = "";
-  let hasNow = false;
-  MODULES.forEach(([s,e])=>{
-    const el = document.createElement("i");
-    el.className = "bar";
-    const hit = blocks.find(b => s < b.end && e > b.start);
-    if(hit) el.dataset.kind = hit.kind;
-    if(now.minutes >= s && now.minutes <= e){ el.classList.add("now"); hasNow = true; }
-    bars.appendChild(el);
-  });
-  // Fuera del rango de módulos (madrugada, antes de las 08:31) no hay bloque que resaltar como "ahora".
-  document.querySelector(".strip").style.display = hasNow ? "" : "none";
-
   updateCalendarNow();
 }
 
-const CAL_START = MODULES[0][0], CAL_END = MODULES[MODULES.length-1][1];
+const CAL_START = t("08:31"), CAL_END = t("22:30");
 const calPct = mins => (mins - CAL_START) / (CAL_END - CAL_START) * 100;
 
 function buildWeek(){
