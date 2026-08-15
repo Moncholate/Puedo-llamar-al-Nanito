@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>¿Puedo llamar al nanito?</title>
+<meta name="description" content="Averigua al instante si el nanito puede contestar el teléfono ahora mismo." />
+<meta name="theme-color" content="#0E5C46" />
+<meta property="og:title" content="¿Puedo llamar al nanito?" />
+<meta property="og:description" content="La respuesta, en tiempo real." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#17203F; --ink:#DDE3F2; --dim:rgba(221,227,242,.62); --accent:#85B7EB;
+    --line:rgba(255,255,255,.16);
+    --font-display:"Bricolage Grotesque",system-ui,sans-serif;
+    --font-body:"Instrument Sans",system-ui,sans-serif;
+    --font-mono:"Space Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:var(--font-body); line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    transition:background-color .6s ease, color .6s ease;
+    display:flex; flex-direction:column;
+    padding:clamp(20px,5vw,56px);
+    gap:clamp(24px,5vh,48px);
+  }
+  .top{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;
+    font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .clock{color:var(--ink);font-weight:700;letter-spacing:.08em}
+
+  main{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:1100px;width:100%;margin:0 auto}
+  .portrait{width:clamp(84px,13vw,150px);height:clamp(84px,13vw,150px);border-radius:22px;
+    overflow:hidden;margin-bottom:clamp(14px,2.5vh,22px);border:1px solid var(--line);
+    background:rgba(255,255,255,.04);transition:border-color .6s ease,background-color .6s ease}
+  .portrait img{width:100%;height:100%;object-fit:cover;display:block}
+  .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:clamp(12px,2vh,20px)}
+  .verdict{
+    font-family:var(--font-display);
+    font-size:clamp(3.4rem,13vw,9rem);
+    font-weight:800; line-height:.92; letter-spacing:-.035em;
+    text-wrap:balance;
+  }
+  .detail{
+    font-size:clamp(1.05rem,2.6vw,1.55rem); color:var(--dim);
+    margin-top:clamp(14px,2.5vh,24px); max-width:34ch; text-wrap:pretty;
+  }
+  .detail b{color:var(--ink);font-weight:500}
+
+  .strip{margin-top:clamp(28px,5vh,52px)}
+  .strip-head{display:flex;justify-content:space-between;font-family:var(--font-mono);
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+  .bars{display:flex;gap:3px;align-items:flex-end;height:56px}
+  .bar{flex:1;border-radius:2px;background:rgba(255,255,255,.14);height:38%;position:relative;transition:height .4s ease}
+  .bar[data-kind="clase"]{background:rgba(255,255,255,.5);height:100%}
+  .bar[data-kind="inclusion"]{background:rgba(255,255,255,.36);height:78%}
+  .bar[data-kind="reunion"]{background:rgba(255,255,255,.36);height:78%}
+  .bar.now{background:var(--accent);height:100%}
+  .bar.now::after{content:"";position:absolute;left:50%;transform:translateX(-50%);
+    bottom:-11px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:20px;
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .legend span{display:flex;align-items:center;gap:7px}
+  .swatch{width:14px;height:8px;border-radius:2px;background:rgba(255,255,255,.14)}
+  .swatch.clase{background:rgba(255,255,255,.5)}
+  .swatch.incl{background:rgba(255,255,255,.36)}
+
+  footer{max-width:1100px;width:100%;margin:0 auto;border-top:1px solid var(--line);padding-top:20px}
+  .toggle{background:none;border:1px solid var(--line);color:var(--ink);cursor:pointer;
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    padding:9px 16px;border-radius:999px;transition:background-color .2s ease,border-color .2s ease}
+  .toggle:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.34)}
+  .toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .week{margin-top:24px;display:none;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+  .week.open{display:grid}
+  .day h3{font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);font-weight:400;margin-bottom:10px}
+  .day ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+  .day li{font-size:13px;color:var(--dim);display:flex;gap:9px;align-items:baseline}
+  .day time{font-family:var(--font-mono);font-size:11px;color:var(--ink);white-space:nowrap}
+  .note{margin-top:26px;font-size:12px;color:var(--dim);max-width:62ch}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span>Santiago de Chile</span>
+  <span class="clock" id="clock">--:--</span>
+</div>
+
+<main>
+  <div class="portrait"><img id="portraitImg" src="" alt="" /></div>
+  <p class="eyebrow" id="eyebrow">Cargando…</p>
+  <h1 class="verdict" id="verdict">Un segundo</h1>
+  <p class="detail" id="detail">Revisando el horario.</p>
+
+  <section class="strip" aria-hidden="true">
+    <div class="strip-head"><span id="stripDay">Hoy</span><span>08:31 → 22:30</span></div>
+    <div class="bars" id="bars"></div>
+    <div class="legend">
+      <span><i class="swatch"></i>Libre</span>
+      <span><i class="swatch incl"></i>Inclusión</span>
+      <span><i class="swatch clase"></i>Clases</span>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <button class="toggle" id="toggle" aria-expanded="false" aria-controls="week">Ver la semana completa</button>
+  <div class="week" id="week"></div>
+  <p class="note">Horario del semestre 2026-2, sede Alameda. Se asume descanso entre las 00:00 y las 10:00. La hora mostrada es siempre la de Santiago, sin importar desde dónde entres.</p>
+</footer>
+
+<script>
+const TZ = "America/Santiago";
+
+const MODULES = [
+  [511,550],[551,590],[601,640],[641,680],[691,730],[731,770],[781,820],[821,860],
+  [871,910],[911,950],[961,1000],[1001,1040],[1051,1090],[1091,1130],[1141,1180],
+  [1181,1220],[1231,1270],[1271,1310],[1311,1350]
+];
+
+const t = (hhmm) => { const [h,m] = hhmm.split(":").map(Number); return h*60+m; };
+
+const SCHEDULE = {
+  1:[ ["12:11","13:40","inclusion","horas de inclusión virtual",""],
+      ["17:31","18:50","inclusion","horas de inclusión presencial",""],
+      ["19:01","21:10","clase","Inglés intermedio","AL-406"],
+      ["21:11","22:30","clase","Inglés intermedio I","AL-405"] ],
+  2:[ ["13:01","14:20","clase","Inglés elemental I","AL-404"],
+      ["19:01","20:20","clase","Inglés elemental I","AL-503A"],
+      ["20:31","21:10","inclusion","horas de inclusión presencial",""],
+      ["21:11","22:30","clase","Inglés básico II","AL-503A"] ],
+  3:[ ["11:31","12:50","reunion","reunión del equipo de inclusión",""],
+      ["13:01","13:40","inclusion","horas de inclusión virtual",""],
+      ["17:31","18:50","inclusion","horas de inclusión presencial",""],
+      ["19:01","21:10","clase","Inglés intermedio","AL-406"],
+      ["21:11","22:30","clase","Inglés intermedio I","AL-405"] ],
+  4:[ ["13:01","14:20","clase","Inglés elemental I","AL-310"],
+      ["19:01","20:20","clase","Inglés elemental I","AL-405"] ],
+  5:[ ["12:11","13:40","inclusion","horas de inclusión virtual",""],
+      ["19:01","20:20","clase","Inglés intermedio","AL-310"],
+      ["20:31","21:10","inclusion","horas de inclusión presencial",""],
+      ["21:11","22:30","clase","Inglés básico II","AL-411"] ],
+  6:[], 0:[]
+};
+
+const DAY_NAMES = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+const WAKE_UP = t("10:00");
+const CHAIN_GAP = 15;
+
+// 4 estados posibles. Cada uno pinta un color de tema y una foto en Fotos/.
+const THEMES = {
+  disponible: {bg:"#0E5C46", ink:"#DFF3EA", dim:"rgba(223,243,234,.66)", accent:"#7FD9B4"},
+  quizas:     {bg:"#8A5A0E", ink:"#FBEEDA", dim:"rgba(251,238,218,.66)", accent:"#F5C46A"},
+  ocupado:    {bg:"#8A2B22", ink:"#FBE7E2", dim:"rgba(251,231,226,.66)", accent:"#F0997B"},
+  durmiendo:  {bg:"#17203F", ink:"#DDE3F2", dim:"rgba(221,227,242,.66)", accent:"#85B7EB"}
+};
+
+const IMAGES = {
+  disponible: "Fotos/Disponible.jpg",
+  quizas:     "Fotos/Maybe.jpg",
+  ocupado:    "Fotos/En clases.jpg",
+  durmiendo:  "Fotos/Mimiendo.jpg"
+};
+
+function nowInSantiago(){
+  const parts = new Intl.DateTimeFormat("es-CL",{timeZone:TZ,weekday:"short",hour:"2-digit",
+    minute:"2-digit",hour12:false}).formatToParts(new Date());
+  const get = k => parts.find(p=>p.type===k).value;
+  const wd = {"dom":0,"lun":1,"mar":2,"mié":3,"mie":3,"jue":4,"vie":5,"sáb":6,"sab":6};
+  const key = get("weekday").toLowerCase().replace(".","").slice(0,3);
+  return {day:wd[key], minutes:Number(get("hour"))*60+Number(get("minute")),
+          hh:get("hour"), mm:get("minute")};
+}
+
+function fmt(mins){
+  const h = String(Math.floor(mins/60)).padStart(2,"0");
+  const m = String(mins%60).padStart(2,"0");
+  return h+":"+m;
+}
+
+function blocksFor(day){
+  return (SCHEDULE[day]||[]).map(b=>({start:t(b[0]),end:t(b[1]),kind:b[2],label:b[3],room:b[4]}));
+}
+
+function chainEnd(blocks, i){
+  let end = blocks[i].end;
+  for(let j=i+1;j<blocks.length;j++){
+    if(blocks[j].start - end <= CHAIN_GAP) end = blocks[j].end; else break;
+  }
+  return end;
+}
+
+function nextBlock(blocks, mins){
+  return blocks.find(b=>b.start > mins) || null;
+}
+
+function decide(){
+  const now = nowInSantiago();
+  const blocks = blocksFor(now.day);
+
+  // Ta mimiendo: de 00:00 a 10:00, todos los días.
+  if(now.minutes < WAKE_UP){
+    return {state:"durmiendo", eyebrow:"Fuera de horario", verdict:"¡Ta mimiendo!",
+      detail:"Debería estar durmiendo. Escríbele un mensaje y lo lee al despertar."};
+  }
+
+  // ¿Está en medio de un bloque ahora mismo?
+  const idx = blocks.findIndex(b => now.minutes >= b.start && now.minutes <= b.end);
+  if(idx !== -1){
+    const b = blocks[idx];
+    const free = chainEnd(blocks, idx);
+
+    if(b.kind === "clase"){
+      return {state:"ocupado", eyebrow:"Ocupado ahora", verdict:"¡Ta ocupao!",
+        detail:`Está haciendo clases de <b>${b.label}</b> en la sala ${b.room}. Queda libre a las <b>${fmt(free)}</b>.`};
+    }
+    if(b.kind === "reunion"){
+      return {state:"ocupado", eyebrow:"Ocupado ahora", verdict:"¡Ta ocupao!",
+        detail:`Está en <b>${b.label}</b>. Queda libre a las <b>${fmt(free)}</b>.`};
+    }
+    // horas de inclusión (que no son la reunión de equipo)
+    return {state:"quizas", eyebrow:"Quizás toy ocupao", verdict:"Juégatela.",
+      detail:`Está en <b>${b.label}</b>. Puede que conteste — queda libre a las <b>${fmt(free)}</b>.`};
+  }
+
+  // Libre por ahora: ¿queda un bloque muy pronto?
+  const nxt = nextBlock(blocks, now.minutes);
+  if(nxt){
+    const gap = nxt.start - now.minutes;
+    if(gap <= 20){
+      return {state:"quizas", eyebrow:"Quizás toy ocupao", verdict:"Juégatela.",
+        detail:`Le quedan <b>${gap} minutos</b> antes de ${nxt.room ? "entrar a clases" : "su siguiente bloque"}. Puede que no alcance a contestar.`};
+    }
+    return {state:"disponible", eyebrow:"Disponible", verdict:"¡Llama al toque!",
+      detail:`Está libre hasta las <b>${fmt(nxt.start)}</b>. Tienes ${Math.floor(gap/60)>0 ? Math.floor(gap/60)+" h "+(gap%60)+" min" : gap+" min"} por delante.`};
+  }
+
+  const weekend = now.day === 0 || now.day === 6;
+  return {state:"disponible", eyebrow:weekend ? "Fin de semana" : "Disponible",
+    verdict:"¡Llama al toque!",
+    detail: weekend
+      ? "No tiene clases ni bloques de inclusión hoy. Aprovecha."
+      : "Ya terminó todos sus bloques de hoy."};
+}
+
+function paint(){
+  const r = decide();
+  const th = THEMES[r.state];
+  const root = document.documentElement.style;
+  root.setProperty("--bg",th.bg); root.setProperty("--ink",th.ink);
+  root.setProperty("--dim",th.dim); root.setProperty("--accent",th.accent);
+  document.querySelector('meta[name="theme-color"]').setAttribute("content",th.bg);
+
+  const now = nowInSantiago();
+  document.getElementById("clock").textContent = now.hh+":"+now.mm;
+  document.getElementById("eyebrow").textContent = r.eyebrow;
+  document.getElementById("verdict").textContent = r.verdict;
+  document.getElementById("detail").innerHTML = r.detail;
+  document.getElementById("stripDay").textContent = DAY_NAMES[now.day];
+
+  const portrait = document.getElementById("portraitImg");
+  const src = IMAGES[r.state];
+  if(portrait.getAttribute("data-state") !== r.state){
+    portrait.setAttribute("data-state", r.state);
+    portrait.onerror = () => { portrait.closest(".portrait").style.display = "none"; };
+    portrait.onload = () => { portrait.closest(".portrait").style.display = ""; };
+    portrait.src = src;
+  }
+  portrait.alt = r.verdict;
+
+  const blocks = blocksFor(now.day);
+  const bars = document.getElementById("bars");
+  bars.innerHTML = "";
+  MODULES.forEach(([s,e])=>{
+    const el = document.createElement("i");
+    el.className = "bar";
+    const hit = blocks.find(b => s < b.end && e > b.start);
+    if(hit) el.dataset.kind = hit.kind;
+    if(now.minutes >= s && now.minutes <= e) el.classList.add("now");
+    bars.appendChild(el);
+  });
+}
+
+function buildWeek(){
+  const wrap = document.getElementById("week");
+  [1,2,3,4,5].forEach(d=>{
+    const col = document.createElement("div");
+    col.className = "day";
+    const items = blocksFor(d).map(b=>{
+      const name = b.kind === "clase" ? b.label + (b.room ? " · "+b.room : "") : b.label;
+      return `<li><time>${fmt(b.start)}</time><span>${name}</span></li>`;
+    }).join("");
+    col.innerHTML = `<h3>${DAY_NAMES[d]}</h3><ul>${items}</ul>`;
+    wrap.appendChild(col);
+  });
+}
+
+document.getElementById("toggle").addEventListener("click", e=>{
+  const w = document.getElementById("week");
+  const open = w.classList.toggle("open");
+  e.currentTarget.setAttribute("aria-expanded", String(open));
+  e.currentTarget.textContent = open ? "Ocultar la semana" : "Ver la semana completa";
+});
+
+buildWeek();
+paint();
+setInterval(paint, 20000);
+</script>
+</body>
+</html>
