@@ -71,14 +71,14 @@
   .cal-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .calendar{display:grid;grid-template-columns:36px repeat(5,minmax(132px,1fr));gap:0 8px;min-width:716px}
   .cal-hours{position:sticky;left:0;z-index:1;background:var(--bg);
-    height:clamp(520px,78vh,680px)}
+    height:clamp(600px,86vh,780px)}
   .cal-hour{position:absolute;left:0;right:6px;transform:translateY(-50%);
     font-family:var(--font-mono);font-size:10px;color:var(--dim);text-align:right}
   .cal-day{display:flex;flex-direction:column;gap:8px}
   .cal-daylabel{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
     color:var(--dim);text-align:center}
   .cal-day.today .cal-daylabel{color:var(--accent)}
-  .cal-track{position:relative;height:clamp(520px,78vh,680px);border-radius:10px;
+  .cal-track{position:relative;height:clamp(600px,86vh,780px);border-radius:10px;
     background:rgba(255,255,255,.03)}
   .cal-day.today .cal-track{background:rgba(255,255,255,.07)}
   .cal-hline{position:absolute;left:0;right:0;height:1px;background:var(--line)}
@@ -290,9 +290,12 @@ function buildWeek(){
     const linesHtml = hours.map(h => `<i class="cal-hline" style="top:${calPct(h*60)}%"></i>`).join("");
     const blocksHtml = blocksFor(d).map(b=>{
       const name = b.kind === "clase" ? b.label + (b.room ? " · "+b.room : "") : b.label;
+      const short = b.kind === "reunion" ? "Reunión de equipo"
+        : b.kind === "inclusion" ? b.label.replace(/^horas de /, "").replace(/^./, c => c.toUpperCase())
+        : name;
       const top = calPct(b.start), height = calPct(b.end) - calPct(b.start);
       return `<div class="cal-block" data-kind="${b.kind}" data-start="${b.start}" style="top:${top}%;height:${height}%" title="${name} · ${fmt(b.start)}–${fmt(b.end)}">
-        <span class="cal-time">${fmt(b.start)}</span><span class="cal-label">${name}</span>
+        <span class="cal-time">${fmt(b.start)}–${fmt(b.end)}</span><span class="cal-label">${short}</span>
       </div>`;
     }).join("");
     return `<div class="cal-day" data-day="${d}">
