@@ -91,6 +91,7 @@
   .cal-block.current{box-shadow:0 0 0 2px var(--ink);z-index:2}
   .cal-time{font-family:var(--font-mono);font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
   .cal-label{font-size:10.5px;line-height:1.22;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
+  .cal-label-solo{font-size:11px;line-height:1.15;margin:auto 0;-webkit-line-clamp:2}
   .cal-now{position:absolute;left:-2px;right:-2px;height:2px;background:var(--accent);
     box-shadow:0 0 0 1px rgba(0,0,0,.45);z-index:3}
   .cal-now::before{content:"";position:absolute;left:-2px;top:50%;transform:translateY(-50%);
@@ -294,8 +295,12 @@ function buildWeek(){
         : b.kind === "inclusion" ? b.label.replace(/^horas de /, "").replace(/^./, c => c.toUpperCase())
         : name;
       const top = calPct(b.start), height = calPct(b.end) - calPct(b.start);
+      // Los bloques muy cortos (≤50 min) no alcanzan a mostrar hora + texto en 2 líneas: solo el texto, una línea.
+      const inner = (b.end - b.start) <= 50
+        ? `<span class="cal-label cal-label-solo">${short}</span>`
+        : `<span class="cal-time">${fmt(b.start)}–${fmt(b.end)}</span><span class="cal-label">${short}</span>`;
       return `<div class="cal-block" data-kind="${b.kind}" data-start="${b.start}" style="top:${top}%;height:${height}%" title="${name} · ${fmt(b.start)}–${fmt(b.end)}">
-        <span class="cal-time">${fmt(b.start)}–${fmt(b.end)}</span><span class="cal-label">${short}</span>
+        ${inner}
       </div>`;
     }).join("");
     return `<div class="cal-day" data-day="${d}">
