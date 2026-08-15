@@ -86,16 +86,33 @@
     padding:9px 16px;border-radius:999px;transition:background-color .2s ease,border-color .2s ease}
   .toggle:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.34)}
   .toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-  .week{margin-top:24px;display:none;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
-  .week.open{display:grid}
-  .day h3{font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--accent);font-weight:400;margin-bottom:10px}
-  .day ul{list-style:none;display:flex;flex-direction:column;gap:7px}
-  .day li{font-size:13px;color:var(--dim);display:flex;gap:9px;align-items:baseline}
-  .day time{font-family:var(--font-mono);font-size:11px;color:var(--ink);white-space:nowrap}
-  .day li[data-kind="clase"] time{color:#F2C14E}
-  .day li[data-kind="inclusion"] time{color:#5EC8D8}
-  .day li[data-kind="reunion"] time{color:#5EC8D8}
+  .week{margin-top:24px;display:none}
+  .week.open{display:block}
+  .cal-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .calendar{display:grid;grid-template-columns:36px repeat(5,minmax(116px,1fr));gap:0 8px;min-width:660px}
+  .cal-hours{position:sticky;left:0;z-index:1;background:var(--bg);
+    height:clamp(520px,78vh,680px)}
+  .cal-hour{position:absolute;left:0;right:6px;transform:translateY(-50%);
+    font-family:var(--font-mono);font-size:10px;color:var(--dim);text-align:right}
+  .cal-day{display:flex;flex-direction:column;gap:8px}
+  .cal-daylabel{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--dim);text-align:center}
+  .cal-day.today .cal-daylabel{color:var(--accent)}
+  .cal-track{position:relative;height:clamp(520px,78vh,680px);border-radius:10px;
+    background:rgba(255,255,255,.03)}
+  .cal-day.today .cal-track{background:rgba(255,255,255,.07)}
+  .cal-hline{position:absolute;left:0;right:0;height:1px;background:var(--line)}
+  .cal-block{position:absolute;left:2px;right:2px;border-radius:6px;padding:3px 6px;
+    overflow:hidden;background:rgba(255,255,255,.18);color:var(--ink);
+    display:flex;flex-direction:column;justify-content:center;gap:1px}
+  .cal-block[data-kind="clase"]{background:#F2C14E;color:#2B1D04}
+  .cal-block[data-kind="inclusion"]{background:#5EC8D8;color:#04272B}
+  .cal-block[data-kind="reunion"]{background:#5EC8D8;color:#04272B}
+  .cal-time{font-family:var(--font-mono);font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-label{font-size:10.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-now{position:absolute;left:-2px;right:-2px;height:2px;background:var(--accent);z-index:2}
+  .cal-now::before{content:"";position:absolute;left:-2px;top:50%;transform:translateY(-50%);
+    width:6px;height:6px;border-radius:50%;background:var(--accent)}
   .note{margin-top:26px;font-size:12px;color:var(--dim);max-width:62ch}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -305,20 +322,60 @@ function paint(){
   });
   // Fuera del rango de módulos (madrugada, antes de las 08:31) no hay bloque que resaltar como "ahora".
   document.querySelector(".strip").style.display = hasNow ? "" : "none";
+
+  updateCalendarNow();
 }
+
+const CAL_START = MODULES[0][0], CAL_END = MODULES[MODULES.length-1][1];
+const calPct = mins => (mins - CAL_START) / (CAL_END - CAL_START) * 100;
 
 function buildWeek(){
   const wrap = document.getElementById("week");
-  [1,2,3,4,5].forEach(d=>{
-    const col = document.createElement("div");
-    col.className = "day";
-    const items = blocksFor(d).map(b=>{
+  const hours = [];
+  for(let h = Math.ceil(CAL_START/60); h <= Math.floor(CAL_END/60); h++) hours.push(h);
+
+  const hoursHtml = hours.map(h =>
+    `<span class="cal-hour" style="top:${calPct(h*60)}%">${String(h).padStart(2,"0")}</span>`
+  ).join("");
+
+  const daysHtml = [1,2,3,4,5].map(d=>{
+    const linesHtml = hours.map(h => `<i class="cal-hline" style="top:${calPct(h*60)}%"></i>`).join("");
+    const blocksHtml = blocksFor(d).map(b=>{
       const name = b.kind === "clase" ? b.label + (b.room ? " · "+b.room : "") : b.label;
-      return `<li data-kind="${b.kind}"><time>${fmt(b.start)}–${fmt(b.end)}</time><span>${name}</span></li>`;
+      const top = calPct(b.start), height = calPct(b.end) - calPct(b.start);
+      return `<div class="cal-block" data-kind="${b.kind}" style="top:${top}%;height:${height}%" title="${name} · ${fmt(b.start)}–${fmt(b.end)}">
+        <span class="cal-time">${fmt(b.start)}</span><span class="cal-label">${name}</span>
+      </div>`;
     }).join("");
-    col.innerHTML = `<h3>${DAY_NAMES[d]}</h3><ul>${items}</ul>`;
-    wrap.appendChild(col);
+    return `<div class="cal-day" data-day="${d}">
+      <p class="cal-daylabel">${DAY_NAMES[d].slice(0,3)}</p>
+      <div class="cal-track">${linesHtml}${blocksHtml}</div>
+    </div>`;
+  }).join("");
+
+  wrap.innerHTML = `<div class="cal-scroll"><div class="calendar">
+    <div class="cal-hours">${hoursHtml}</div>
+    ${daysHtml}
+  </div></div>`;
+}
+
+function updateCalendarNow(){
+  const now = nowInSantiago();
+  document.querySelectorAll(".cal-day").forEach(col=>{
+    col.classList.remove("today");
+    const line = col.querySelector(".cal-now");
+    if(line) line.remove();
   });
+
+  if(now.day < 1 || now.day > 5 || now.minutes < CAL_START || now.minutes > CAL_END) return;
+
+  const col = document.querySelector(`.cal-day[data-day="${now.day}"]`);
+  if(!col) return;
+  col.classList.add("today");
+  const line = document.createElement("i");
+  line.className = "cal-now";
+  line.style.top = calPct(now.minutes) + "%";
+  col.querySelector(".cal-track").appendChild(line);
 }
 
 document.getElementById("toggle").addEventListener("click", e=>{
