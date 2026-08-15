@@ -291,14 +291,17 @@ function paint(){
   const blocks = blocksFor(now.day);
   const bars = document.getElementById("bars");
   bars.innerHTML = "";
+  let hasNow = false;
   MODULES.forEach(([s,e])=>{
     const el = document.createElement("i");
     el.className = "bar";
     const hit = blocks.find(b => s < b.end && e > b.start);
     if(hit) el.dataset.kind = hit.kind;
-    if(now.minutes >= s && now.minutes <= e) el.classList.add("now");
+    if(now.minutes >= s && now.minutes <= e){ el.classList.add("now"); hasNow = true; }
     bars.appendChild(el);
   });
+  // Fuera del rango de módulos (madrugada, antes de las 08:31) no hay bloque que resaltar como "ahora".
+  document.querySelector(".strip").style.display = hasNow ? "" : "none";
 }
 
 function buildWeek(){
