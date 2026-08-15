@@ -61,6 +61,7 @@
   .detail b{color:var(--ink);font-weight:500}
 
   .strip{margin-top:clamp(28px,5vh,52px)}
+  .strip-title{font-size:13px;color:var(--dim);margin-bottom:12px}
   .strip-head{display:flex;justify-content:space-between;font-family:var(--font-mono);
     font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
   .bars{display:flex;gap:3px;align-items:flex-end;height:56px}
@@ -77,6 +78,7 @@
   .swatch{width:14px;height:8px;border-radius:2px;background:rgba(255,255,255,.14)}
   .swatch.clase{background:rgba(255,255,255,.5)}
   .swatch.incl{background:rgba(255,255,255,.36)}
+  .swatch.now{width:8px;height:8px;border-radius:50%;background:var(--accent)}
 
   footer{max-width:1100px;width:100%;margin:0 auto;border-top:1px solid var(--line);padding-top:20px}
   .toggle{background:none;border:1px solid var(--line);color:var(--ink);cursor:pointer;
@@ -109,12 +111,14 @@
   <p class="detail" id="detail">Revisando el horario.</p>
 
   <section class="strip" aria-hidden="true">
+    <p class="strip-title">Cada barra es un bloque del día — la resaltada es ahora.</p>
     <div class="strip-head"><span id="stripDay">Hoy</span><span>08:31 → 22:30</span></div>
     <div class="bars" id="bars"></div>
     <div class="legend">
       <span><i class="swatch"></i>Libre</span>
       <span><i class="swatch incl"></i>Inclusión</span>
       <span><i class="swatch clase"></i>Clases</span>
+      <span><i class="swatch now"></i>Ahora</span>
     </div>
   </section>
 </main>
