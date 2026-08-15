@@ -351,6 +351,7 @@ document.getElementById("toggle").addEventListener("click", e=>{
 buildWeek();
 paint();
 setInterval(paint, 20000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) paint(); });
 </script>
 </body>
 </html>
