@@ -89,7 +89,7 @@
   .week{margin-top:24px;display:none}
   .week.open{display:block}
   .cal-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .calendar{display:grid;grid-template-columns:36px repeat(5,minmax(116px,1fr));gap:0 8px;min-width:660px}
+  .calendar{display:grid;grid-template-columns:36px repeat(5,minmax(132px,1fr));gap:0 8px;min-width:716px}
   .cal-hours{position:sticky;left:0;z-index:1;background:var(--bg);
     height:clamp(520px,78vh,680px)}
   .cal-hour{position:absolute;left:0;right:6px;transform:translateY(-50%);
@@ -104,15 +104,17 @@
   .cal-hline{position:absolute;left:0;right:0;height:1px;background:var(--line)}
   .cal-block{position:absolute;left:2px;right:2px;border-radius:6px;padding:3px 6px;
     overflow:hidden;background:rgba(255,255,255,.18);color:var(--ink);
-    display:flex;flex-direction:column;justify-content:center;gap:1px}
+    display:flex;flex-direction:column;justify-content:flex-start;gap:1px}
   .cal-block[data-kind="clase"]{background:#F2C14E;color:#2B1D04}
   .cal-block[data-kind="inclusion"]{background:#5EC8D8;color:#04272B}
   .cal-block[data-kind="reunion"]{background:#5EC8D8;color:#04272B}
-  .cal-time{font-family:var(--font-mono);font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .cal-label{font-size:10.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .cal-now{position:absolute;left:-2px;right:-2px;height:2px;background:var(--accent);z-index:2}
+  .cal-block.current{box-shadow:0 0 0 2px var(--ink);z-index:2}
+  .cal-time{font-family:var(--font-mono);font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+  .cal-label{font-size:10.5px;line-height:1.22;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
+  .cal-now{position:absolute;left:-2px;right:-2px;height:2px;background:var(--accent);
+    box-shadow:0 0 0 1px rgba(0,0,0,.45);z-index:3}
   .cal-now::before{content:"";position:absolute;left:-2px;top:50%;transform:translateY(-50%);
-    width:6px;height:6px;border-radius:50%;background:var(--accent)}
+    width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 1px rgba(0,0,0,.45)}
   .note{margin-top:26px;font-size:12px;color:var(--dim);max-width:62ch}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -343,7 +345,7 @@ function buildWeek(){
     const blocksHtml = blocksFor(d).map(b=>{
       const name = b.kind === "clase" ? b.label + (b.room ? " · "+b.room : "") : b.label;
       const top = calPct(b.start), height = calPct(b.end) - calPct(b.start);
-      return `<div class="cal-block" data-kind="${b.kind}" style="top:${top}%;height:${height}%" title="${name} · ${fmt(b.start)}–${fmt(b.end)}">
+      return `<div class="cal-block" data-kind="${b.kind}" data-start="${b.start}" style="top:${top}%;height:${height}%" title="${name} · ${fmt(b.start)}–${fmt(b.end)}">
         <span class="cal-time">${fmt(b.start)}</span><span class="cal-label">${name}</span>
       </div>`;
     }).join("");
@@ -366,6 +368,7 @@ function updateCalendarNow(){
     const line = col.querySelector(".cal-now");
     if(line) line.remove();
   });
+  document.querySelectorAll(".cal-block.current").forEach(el => el.classList.remove("current"));
 
   if(now.day < 1 || now.day > 5 || now.minutes < CAL_START || now.minutes > CAL_END) return;
 
@@ -376,6 +379,12 @@ function updateCalendarNow(){
   line.className = "cal-now";
   line.style.top = calPct(now.minutes) + "%";
   col.querySelector(".cal-track").appendChild(line);
+
+  const currentBlock = blocksFor(now.day).find(b => now.minutes >= b.start && now.minutes <= b.end);
+  if(currentBlock){
+    const el = col.querySelector(`.cal-block[data-start="${currentBlock.start}"]`);
+    if(el) el.classList.add("current");
+  }
 }
 
 document.getElementById("toggle").addEventListener("click", e=>{
