@@ -93,6 +93,9 @@
   .day ul{list-style:none;display:flex;flex-direction:column;gap:7px}
   .day li{font-size:13px;color:var(--dim);display:flex;gap:9px;align-items:baseline}
   .day time{font-family:var(--font-mono);font-size:11px;color:var(--ink);white-space:nowrap}
+  .day li[data-kind="clase"] time{color:#F2C14E}
+  .day li[data-kind="inclusion"] time{color:#5EC8D8}
+  .day li[data-kind="reunion"] time{color:#5EC8D8}
   .note{margin-top:26px;font-size:12px;color:var(--dim);max-width:62ch}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -311,7 +314,7 @@ function buildWeek(){
     col.className = "day";
     const items = blocksFor(d).map(b=>{
       const name = b.kind === "clase" ? b.label + (b.room ? " · "+b.room : "") : b.label;
-      return `<li><time>${fmt(b.start)}–${fmt(b.end)}</time><span>${name}</span></li>`;
+      return `<li data-kind="${b.kind}"><time>${fmt(b.start)}–${fmt(b.end)}</time><span>${name}</span></li>`;
     }).join("");
     col.innerHTML = `<h3>${DAY_NAMES[d]}</h3><ul>${items}</ul>`;
     wrap.appendChild(col);
