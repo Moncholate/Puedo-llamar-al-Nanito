@@ -167,6 +167,13 @@ const IMAGES = {
   durmiendo:  "Fotos/Mimiendo.jpg"
 };
 
+const SIGLAS = {
+  "Inglés intermedio":   "INI5111",
+  "Inglés intermedio I": "INU5101",
+  "Inglés elemental I":  "INU3101",
+  "Inglés básico II":    "INU2101"
+};
+
 function nowInSantiago(){
   const parts = new Intl.DateTimeFormat("es-CL",{timeZone:TZ,weekday:"short",hour:"2-digit",
     minute:"2-digit",hour12:false}).formatToParts(new Date());
@@ -290,7 +297,10 @@ function buildWeek(){
   const daysHtml = [1,2,3,4,5].map(d=>{
     const linesHtml = hours.map(h => `<i class="cal-hline" style="top:${calPct(h*60)}%"></i>`).join("");
     const blocksHtml = blocksFor(d).map(b=>{
-      const name = b.kind === "clase" ? b.label + (b.room ? " · "+b.room : "") : b.label;
+      const sigla = SIGLAS[b.label];
+      const name = b.kind === "clase"
+        ? (sigla ? sigla+" " : "") + b.label + (b.room ? " · "+b.room : "")
+        : b.label;
       const short = b.kind === "reunion" ? "Reunión de equipo"
         : b.kind === "inclusion" ? b.label.replace(/^horas de /, "").replace(/^./, c => c.toUpperCase())
         : name;
