@@ -128,23 +128,23 @@ const t = (hhmm) => { const [h,m] = hhmm.split(":").map(Number); return h*60+m; 
 const SCHEDULE = {
   1:[ ["12:11","13:40","inclusion","horas de inclusión virtual",""],
       ["17:31","18:50","inclusion","horas de inclusión presencial",""],
-      ["19:01","21:10","clase","Inglés intermedio","AL-406"],
-      ["21:11","22:30","clase","Inglés intermedio I","AL-405"] ],
-  2:[ ["13:01","14:20","clase","Inglés elemental I","AL-404"],
-      ["19:01","20:20","clase","Inglés elemental I","AL-503A"],
+      ["19:01","21:10","clase","Inglés intermedio","AL-406","INI5111-002V(T)"],
+      ["21:11","22:30","clase","Inglés intermedio I","AL-405","INU5101-001V(T)"] ],
+  2:[ ["13:01","14:20","clase","Inglés elemental I","AL-404","INU3101-010D(T)"],
+      ["19:01","20:20","clase","Inglés elemental I","AL-503A","INU3101-005V(T)"],
       ["20:31","21:10","inclusion","horas de inclusión presencial",""],
-      ["21:11","22:30","clase","Inglés básico II","AL-503A"] ],
+      ["21:11","22:30","clase","Inglés básico II","AL-503A","INU2101-002V(T)"] ],
   3:[ ["11:31","12:50","reunion","reunión del equipo de inclusión",""],
       ["13:01","13:40","inclusion","horas de inclusión virtual",""],
       ["17:31","18:50","inclusion","horas de inclusión presencial",""],
-      ["19:01","21:10","clase","Inglés intermedio","AL-406"],
-      ["21:11","22:30","clase","Inglés intermedio I","AL-405"] ],
-  4:[ ["13:01","14:20","clase","Inglés elemental I","AL-310"],
-      ["19:01","20:20","clase","Inglés elemental I","AL-405"] ],
+      ["19:01","21:10","clase","Inglés intermedio","AL-406","INI5111-002V(T)"],
+      ["21:11","22:30","clase","Inglés intermedio I","AL-405","INU5101-001V(T)"] ],
+  4:[ ["13:01","14:20","clase","Inglés elemental I","AL-310","INU3101-010D(T)"],
+      ["19:01","20:20","clase","Inglés elemental I","AL-405","INU3101-005V(T)"] ],
   5:[ ["12:11","13:40","inclusion","horas de inclusión virtual",""],
-      ["19:01","20:20","clase","Inglés intermedio","AL-310"],
+      ["19:01","20:20","clase","Inglés intermedio","AL-310","INI5111-002V(T)"],
       ["20:31","21:10","inclusion","horas de inclusión presencial",""],
-      ["21:11","22:30","clase","Inglés básico II","AL-411"] ],
+      ["21:11","22:30","clase","Inglés básico II","AL-411","INU2101-002V(T)"] ],
   6:[], 0:[]
 };
 
@@ -167,12 +167,6 @@ const IMAGES = {
   durmiendo:  "Fotos/Mimiendo.jpg"
 };
 
-const SIGLAS = {
-  "Inglés intermedio":   "INI5111",
-  "Inglés intermedio I": "INU5101",
-  "Inglés elemental I":  "INU3101",
-  "Inglés básico II":    "INU2101"
-};
 
 function nowInSantiago(){
   const parts = new Intl.DateTimeFormat("es-CL",{timeZone:TZ,weekday:"short",hour:"2-digit",
@@ -191,7 +185,7 @@ function fmt(mins){
 }
 
 function blocksFor(day){
-  return (SCHEDULE[day]||[]).map(b=>({start:t(b[0]),end:t(b[1]),kind:b[2],label:b[3],room:b[4]}));
+  return (SCHEDULE[day]||[]).map(b=>({start:t(b[0]),end:t(b[1]),kind:b[2],label:b[3],room:b[4],sigla:b[5]}));
 }
 
 function chainEnd(blocks, i){
@@ -297,9 +291,8 @@ function buildWeek(){
   const daysHtml = [1,2,3,4,5].map(d=>{
     const linesHtml = hours.map(h => `<i class="cal-hline" style="top:${calPct(h*60)}%"></i>`).join("");
     const blocksHtml = blocksFor(d).map(b=>{
-      const sigla = SIGLAS[b.label];
       const name = b.kind === "clase"
-        ? (sigla ? sigla+" " : "") + b.label + (b.room ? " · "+b.room : "")
+        ? (b.sigla ? b.sigla+" " : "") + b.label + (b.room ? " · "+b.room : "")
         : b.label;
       const short = b.kind === "reunion" ? "Reunión de equipo"
         : b.kind === "inclusion" ? b.label.replace(/^horas de /, "").replace(/^./, c => c.toUpperCase())
